@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Properties</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .buy-container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .buy-button {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">🏡 Available Properties for Purchase</h2>
+        <div class="buy-container p-3">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Dimensions</th>
+                        <th>Price</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="marketListings"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        async function fetchMarketListings() {
+            try {
+                const response = await fetch('/market/listings');
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                const listings = await response.json();
+                console.log("Fetched Listings:", listings);
+
+                const tableBody = document.getElementById('marketListings');
+                tableBody.innerHTML = '';
+
+                listings.forEach(listing => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${listing.property ? listing.property.name : "N/A"}</td>
+                        <td>${listing.property ? listing.property.location : "N/A"}</td>
+                        <td>${listing.property ? listing.property.dimensions + " sq.ft" : "N/A"}</td>
+                        <td>${listing.property ? "$" + (listing.property.pricePerSqFt * listing.property.dimensions) : "N/A"}</td>
+                        <td><button class="btn btn-success buy-button" onclick="buyProperty(${listing.id})">Buy</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error fetching listings:", error);
+                alert("Failed to fetch market listings.");
+            }
+        }
+
+        async function buyProperty(listingId) {
+            try {
+                const response = await fetch(`/market/buy/${listingId}`, { method: "POST" });
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                alert("Property purchased successfully!");
+                fetchMarketListings();  // Refresh listings
+            } catch (error) {
+                console.error("Error buying property:", error);
+                alert("Failed to purchase property.");
+            }
+        }
+
+        fetchMarketListings();
+    </script>
+</body>
+</html>

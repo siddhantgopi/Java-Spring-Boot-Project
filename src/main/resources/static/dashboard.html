@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .dashboard-container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .dashboard-button {
+            width: 100%;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">🎯 Welcome to Your Dashboard</h2>
+        <div class="dashboard-container">
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary dashboard-button" onclick="location.href='/add_property.html'">🏡 Add Property</button>
+                <button class="btn btn-secondary dashboard-button" onclick="location.href='/view_properties.html'">📋 View All Properties</button>
+                <button class="btn btn-success dashboard-button" onclick="location.href='/buy_sell.html'">💰 Buy/Sell Property</button>
+                <button class="btn btn-info dashboard-button" onclick="location.href='/portfolio.html'">📊 See Portfolio</button>
+                <button class="btn btn-warning dashboard-button" onclick="location.href='/transactions.html'">💳 Transactions</button>
+                <button class="btn btn-danger dashboard-button" onclick="logout()">🚪 Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function logout() {
+            fetch('/auth/logout', { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = "/login.html";  // Redirect to login page
+                    }
+                });
+        }
+    </script>
+</body>
+</html>

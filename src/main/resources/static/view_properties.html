@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Properties</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .properties-container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="properties-container">
+            <h2 class="mb-4">🏠 All Properties</h2>
+            <table class="table table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Dimensions (sq ft)</th>
+                        <th>Price per Sq Ft</th>
+                        <th>Total Price</th>
+                        <th>Document</th>
+                    </tr>
+                </thead>
+                <tbody id="propertyTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        async function fetchProperties() {
+            try {
+                const response = await fetch('/property/user-properties', {
+                    credentials: 'include', // Ensure cookies (session) are sent
+                });
+
+                if (!response.ok) {
+                    alert("❌ Failed to fetch properties!");
+                    return;
+                }
+
+                const properties = await response.json();
+                const tableBody = document.getElementById('propertyTable');
+                tableBody.innerHTML = '';
+
+                properties.forEach(property => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${property.name}</td>
+                        <td>${property.location}</td>
+                        <td>${property.dimensions}</td>
+                        <td>$${property.pricePerSqFt.toFixed(2)}</td>
+                        <td>$${(property.pricePerSqFt * property.dimensions).toFixed(2)}</td>
+                        <td><a href="${property.documentPath}" target="_blank" class="btn btn-info btn-sm">📄 View Document</a></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error fetching properties:", error);
+                alert("⚠️ An error occurred while fetching properties.");
+            }
+        }
+
+        // Call function when page loads
+        fetchProperties();
+    </script>
+</body>
+</html>

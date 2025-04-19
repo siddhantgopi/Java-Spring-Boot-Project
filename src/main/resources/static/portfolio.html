@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Overview</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .summary-card {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .profit-positive { color: green; }
+        .profit-negative { color: red; }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">📊 Portfolio Overview</h2>
+
+        <!-- Summary Section -->
+        <div class="card p-3 my-3 summary-card">
+            <span>💰 Net Holdings: <span id="netWorth">$0</span></span>
+            <span>📈 Total Profit/Loss: <span id="totalProfitLoss" class="profit-positive">$0</span></span>
+            <span>📊 Adjusted Value: <span id="adjustedValue" class="profit-positive">$0</span></span>
+        </div>
+
+
+        <!-- Profit/Loss Table -->
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>🏠 Property ID</th>
+                    <th>💵 Buy Price</th>
+                    <th>💰 Sell Price</th>
+                    <th>📊 Profit/Loss</th>
+                    <th>📅 Sell Date</th>
+                </tr>
+            </thead>
+            <tbody id="profitLossTable"></tbody>
+        </table>
+    </div>
+
+    <script>
+        async function fetchPortfolioData() {
+        try {
+            // Fetch Net Worth
+            const netWorthResponse = await fetch('/property/user-properties', { credentials: 'include' });
+            if (!netWorthResponse.ok) throw new Error("Error fetching net worth");
+            const properties = await netWorthResponse.json();
+            
+            let totalNetWorth = properties.reduce((sum, property) => sum + (property.dimensions * property.pricePerSqFt), 0);
+            document.getElementById('netWorth').textContent = `$${totalNetWorth.toLocaleString()}`;
+
+            // Fetch Profit/Loss Data
+            const profitLossResponse = await fetch('/transactions/profit-loss', { credentials: 'include' });
+            if (!profitLossResponse.ok) throw new Error("Error fetching profit/loss");
+            const profitLossData = await profitLossResponse.json();
+
+            let totalProfitLoss = 0;
+            const tableBody = document.getElementById('profitLossTable');
+            tableBody.innerHTML = "";
+
+            profitLossData.forEach(item => {
+                totalProfitLoss += item.profitLoss;
+
+                let profitClass = item.profitLoss >= 0 ? "profit-positive" : "profit-negative";
+                let row = `<tr>
+                    <td>${item.propertyId}</td>
+                    <td>$${item.buyPrice.toLocaleString()}</td>
+                    <td>$${item.sellPrice.toLocaleString()}</td>
+                    <td class="${profitClass}">$${item.profitLoss.toLocaleString()}</td>
+                    <td>${item.sellDate}</td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+
+            // Update Total Profit/Loss
+            let profitClass = totalProfitLoss >= 0 ? "profit-positive" : "profit-negative";
+            let profitLossElement = document.getElementById('totalProfitLoss');
+            profitLossElement.textContent = `$${totalProfitLoss.toLocaleString()}`;
+            profitLossElement.className = profitClass;
+
+            // ✅ Update Adjusted Value (Net Worth + Profit/Loss)
+            let adjustedValue = totalNetWorth + totalProfitLoss;
+            let adjustedValueElement = document.getElementById('adjustedValue');
+            adjustedValueElement.textContent = `$${adjustedValue.toLocaleString()}`;
+            adjustedValueElement.className = adjustedValue >= 0 ? "profit-positive" : "profit-negative";
+
+        } catch (error) {
+            console.error("Error fetching portfolio data:", error);
+        }
+    }
+
+    fetchPortfolioData();
+
+    </script>
+</body>
+</html>
